@@ -233,6 +233,7 @@ namespace pcapTest
             openInterfaceForm.Show();
         }
 
+
         private void toolStripButton3_Click(object sender, EventArgs e)// prev
         {
             if (listView1.SelectedItems.Count == 1)
@@ -281,44 +282,48 @@ namespace pcapTest
 
             // start extracting properties for the listview 
             DateTime time = e.Packet.Timeval.Date;
-                time_str = (time.Hour + 1 ) + ":" + time.Minute + ":" + time.Second + ":" + time.Millisecond;
-                length = e.Packet.Data.Length.ToString();
+            time_str = (time.Hour + 1 ) + ":" + time.Minute + ":" + time.Second + ":" + time.Millisecond;
+            length = e.Packet.Data.Length.ToString();
 
 
-                var packet = PacketDotNet.Packet.ParsePacket(e.Packet.LinkLayerType, e.Packet.Data);
-
-                // add to the list
+            var packet = PacketDotNet.Packet.ParsePacket(e.Packet.LinkLayerType, e.Packet.Data);
+            try
+            {
                 capturedPackets_list.Add(packetNumber, packet);
 
-      
+            }
+            catch (Exception)
+            {
+                packetNumber += 1;
+                capturedPackets_list.Add(packetNumber, packet);
+            }
+
             var ipPacket = (IpPacket)packet.Extract(typeof(IpPacket));
-               
-
-                if (ipPacket != null)
-                {
-                    System.Net.IPAddress srcIp = ipPacket.SourceAddress;
-                    System.Net.IPAddress dstIp = ipPacket.DestinationAddress;
-                    protocol_type = ipPacket.Protocol.ToString();
-                    sourceIP = srcIp.ToString();
-                    destinationIP = dstIp.ToString();
+            if (ipPacket != null)
+            {
+                System.Net.IPAddress srcIp = ipPacket.SourceAddress;
+                System.Net.IPAddress dstIp = ipPacket.DestinationAddress;
+                protocol_type = ipPacket.Protocol.ToString();
+                sourceIP = srcIp.ToString();
+                destinationIP = dstIp.ToString();
 
 
 
-                    var protocolPacket = ipPacket.PayloadPacket;
+                var protocolPacket = ipPacket.PayloadPacket;
 
-                    ListViewItem item = new ListViewItem(packetNumber.ToString());
-                    item.SubItems.Add(time_str);
-                    item.SubItems.Add(sourceIP);
-                    item.SubItems.Add(destinationIP);
-                    item.SubItems.Add(protocol_type);
-                    item.SubItems.Add(length);
+                ListViewItem item = new ListViewItem(packetNumber.ToString());
+                item.SubItems.Add(time_str);
+                item.SubItems.Add(sourceIP);
+                item.SubItems.Add(destinationIP);
+                item.SubItems.Add(protocol_type);
+                item.SubItems.Add(length);
                 
 
-                    Action action = () => listView1.Items.Add(item);
-                    listView1.Invoke(action);
+                Action action = () => listView1.Items.Add(item);
+                listView1.Invoke(action);
             
-                    ++packetNumber;
-                }
+                ++packetNumber;
+            }
         }
     }
 }
